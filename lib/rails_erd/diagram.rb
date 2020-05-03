@@ -177,13 +177,20 @@ module RailsERD
 
     def filtered_entities
       @domain.entities.reject { |entity|
-        options.exclude.present? && [options.exclude].flatten.map(&:to_sym).include?(entity.name.to_sym) or
+        options.exclude.present? && Array(options.exclude).map(&:to_sym).include?(entity.name.to_sym) or
         options[:only].present? && entity.model && ![options[:only]].flatten.map(&:to_sym).include?(entity.name.to_sym) or
         !options.inheritance && entity.specialized? or
         !options.polymorphism && entity.generalized? or
-        !options.disconnected && entity.disconnected?
+        !options.disconnected && entity.disconnected? or
+        options.exclude_flags.present? && entity_has_exclude_flags?(entity)
       }.compact.tap do |entities|
         raise "No entities found; create your models first!" if entities.empty?
+      end
+    end
+
+    def entity_has_exclude_flags?(entity)
+      Array(options.exclude_flags).any? do |flag_method|
+        entity.model.__send__(flag_method) if entity.model.respond_to?(flag_method)
       end
     end
 

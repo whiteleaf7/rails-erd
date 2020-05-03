@@ -54,6 +54,7 @@ module RailsERD
         :only_recursion_depth, nil,
         :prepend_primary, false,
         :cluster, false,
+        :exclude_flags, nil,
       ]
     end
 
